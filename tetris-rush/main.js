@@ -4,10 +4,13 @@ import './style.css'
 
 const canvas = document.querySelector('canvas')
 const context = canvas.getContext('2d')
+const $score = document.querySelector('span')
 
 const BLOCK_SIZE = 20
 const BOARD_WIDTH = 14
 const BOARD_HEIGHT = 30
+
+let score = 0
 
 canvas.width = BLOCK_SIZE * BOARD_WIDTH
 canvas.height = BLOCK_SIZE * BOARD_HEIGHT
@@ -132,6 +135,7 @@ function draw () {
       }
     })
   })
+  $score.innerText = score
 }
 
 document.addEventListener('keydown', event => {
@@ -153,6 +157,23 @@ document.addEventListener('keydown', event => {
       piece.position.y--
       solidifypiece()
       removeRows()
+    }
+  }
+  if (event.key === 'ArrowUp') {
+    const rotated = []
+
+    for (let i = 0; i < piece.shape[0].length; i++) {
+      const row = []
+      for (let j = piece.shape.length - 1; j >= 0; j--) {
+        row.push(piece.shape[j][i])
+      }
+
+      rotated.push(row)
+    }
+    const previousShape = piece.shape
+    piece.shape = rotated
+    if (checkCollision()) {
+      piece.shape = previousShape
     }
   }
 })
@@ -179,8 +200,13 @@ function solidifypiece () {
   // get random shape
   piece.shape = PIECES[Math.floor(Math.random() * PIECES.length)]
   // RESET Position
-  piece.position.x = 0
+  piece.position.x = Math.floor(BOARD_WIDTH / 2 - 2)
   piece.position.y = 0
+  // Game over
+  if (checkCollision()) {
+    window.alert('Game over!! Sorry')
+    board.forEach((row) => row.fill(0))
+  }
 }
 
 function removeRows () {
@@ -195,6 +221,7 @@ function removeRows () {
     board.splice(y, 1)
     const newRow = Array(BOARD_WIDTH).fill(0)
     board.unshift(newRow)
+    score += 10
   })
 }
 
